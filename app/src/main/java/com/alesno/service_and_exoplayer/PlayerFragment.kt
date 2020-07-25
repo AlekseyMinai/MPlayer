@@ -44,6 +44,7 @@ class PlayerFragment : Fragment() {
                 actionImage.isVisible = true
                 actionImage.setImageDrawable(R.drawable.ic_baseline_stop_24)
             }
+            PlayerState.READY,
             PlayerState.STOPPED -> {
                 progressBar.isVisible = false
                 actionImage.isVisible = true
@@ -57,7 +58,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun updateTrack(track: Track) {
-        actionImage.setImageDrawable(track.coverId)
+        cover.setImageDrawable(track.coverId)
         artist.text = track.artist
         title.text = track.title
     }

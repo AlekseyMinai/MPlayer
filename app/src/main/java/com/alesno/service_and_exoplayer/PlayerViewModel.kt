@@ -26,7 +26,7 @@ class PlayerViewModel(
                 .fetch()
                 .collect {
                     mTrack.value = it
-                    mCurrentState.value = PlayerState.STOPPED
+                    mCurrentState.value = PlayerState.READY
                 }
         }
     }
@@ -34,6 +34,7 @@ class PlayerViewModel(
     fun action() {
         when (mCurrentState.value) {
             PlayerState.PLAYING -> stop()
+            PlayerState.READY,
             PlayerState.STOPPED -> play()
             PlayerState.LOADED,
             null -> Unit
