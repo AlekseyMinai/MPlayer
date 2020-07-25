@@ -1,7 +1,7 @@
 package com.alesno.service_and_exoplayer
 
 import android.app.Application
-import com.alesno.service_and_exoplayer.some.Some
+import com.alesno.service_and_exoplayer.repository.Repository
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -19,10 +19,10 @@ class App : Application() {
                 listOf(
                     module {
                         single {
-                            Some()
+                            Repository()
                         }
                         viewModel {
-                            val some = get<Some>()
+                            val some = get<Repository>()
                             PlayerViewModel(some)
                         }
                     }

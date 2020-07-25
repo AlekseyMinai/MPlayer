@@ -5,8 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import com.alesno.service_and_exoplayer.domain.PlayerState
 import kotlinx.android.synthetic.main.fragment_player.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -29,17 +31,42 @@ class PlayerFragment : Fragment() {
         }
         mViewModel.currentState.observe(
             viewLifecycleOwner,
-            Observer<PlayerViewModel.UIState>(::updateUI)
+            Observer<PlayerState>(::updateUI)
         )
     }
 
-    private fun updateUI(state: PlayerViewModel.UIState) {
-        val imageRes = when (state) {
-            PlayerViewModel.UIState.PLAYING -> R.drawable.ic_baseline_stop_24
-            PlayerViewModel.UIState.STOPPED -> R.drawable.ic_baseline_play_arrow_24
-            else -> return
+    private fun updateUI(state: PlayerState) {
+        when (state) {
+            PlayerState.PLAYING -> {
+                progressBar.isVisible = false
+                actionImage.isVisible = true
+                context?.let {
+                    actionImage.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            it,
+                            R.drawable.ic_baseline_stop_24
+                        )
+                    )
+                }
+            }
+            PlayerState.STOPPED -> {
+                progressBar.isVisible = false
+                actionImage.isVisible = true
+                context?.let {
+                    actionImage.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            it,
+                            R.drawable.ic_baseline_play_arrow_24
+                        )
+                    )
+                }
+            }
+            PlayerState.LOADED -> {
+                progressBar.isVisible = true
+                actionImage.isVisible = false
+            }
         }
-        context?.let { actionImage.setImageDrawable(ContextCompat.getDrawable(it, imageRes)) }
+
     }
 
     companion object {
