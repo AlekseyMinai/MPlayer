@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alesno.service_and_exoplayer.domain.PlayerState
+import com.alesno.service_and_exoplayer.domain.Track
 import com.alesno.service_and_exoplayer.repository.IRepository
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -14,7 +15,9 @@ class PlayerViewModel(
 ) : ViewModel() {
 
     val currentState: LiveData<PlayerState> get() = mCurrentState
+    val track: LiveData<Track> get() = mTrack
     private val mCurrentState by uiLazy { MutableLiveData<PlayerState>() }
+    private val mTrack by uiLazy { MutableLiveData<Track>() }
 
     init {
         mCurrentState.value = PlayerState.LOADED
@@ -22,6 +25,7 @@ class PlayerViewModel(
             repository
                 .fetch()
                 .collect {
+                    mTrack.value = it
                     mCurrentState.value = PlayerState.STOPPED
                 }
         }
