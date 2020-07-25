@@ -4,5 +4,6 @@ data class Track(
     val coverId: Int,
     val artist: String,
     val title: String,
-    val resId: Int
+    val resId: Int? = null,
+    val url: String
 )
