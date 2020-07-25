@@ -1,8 +1,8 @@
 package com.alesno.service_and_exoplayer.domain
 
-import com.alesno.service_and_exoplayer.domain.Track
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface IRepository {
-    fun fetch(): Flow<Track>
+    val tracks: StateFlow<Track>
+    fun getNextTrack()
 }

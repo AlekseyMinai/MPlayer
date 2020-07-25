@@ -59,7 +59,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun updateTrack(track: Track) {
-        cover.setImageDrawable(track.coverId)
+       // cover.setImageDrawable(track.coverId)
         artist.text = track.artist
         title.text = track.title
     }
@@ -74,8 +74,9 @@ class PlayerFragment : Fragment() {
         observe(viewLifecycleOwner, Observer { func(it) })
     }
 
-    private fun ImageView.setImageDrawable(@DrawableRes imageRes: Int) {
-        context?.let { setImageDrawable(ContextCompat.getDrawable(it, imageRes)) }
+    private fun ImageView.setImageDrawable(@DrawableRes imageRes: Int?) {
+        if (imageRes == null) return
+        setImageDrawable(ContextCompat.getDrawable(context, imageRes))
     }
 
 }

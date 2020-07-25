@@ -3,17 +3,14 @@ package com.alesno.service_and_exoplayer.presentation
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.alesno.service_and_exoplayer.domain.PlayerServiceConnection
+import com.alesno.service_and_exoplayer.domain.IPlayer
+import com.alesno.service_and_exoplayer.domain.IRepository
 import com.alesno.service_and_exoplayer.domain.PlayerState
 import com.alesno.service_and_exoplayer.domain.Track
-import com.alesno.service_and_exoplayer.domain.IRepository
 import com.alesno.service_and_exoplayer.uiLazy
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 class PlayerViewModel(
-    private val serviceConnection: PlayerServiceConnection,
+    private val player: IPlayer,
     repository: IRepository
 ) : ViewModel() {
 
@@ -21,18 +18,6 @@ class PlayerViewModel(
     val track: LiveData<Track> get() = mTrack
     private val mCurrentState by uiLazy { MutableLiveData<PlayerState>() }
     private val mTrack by uiLazy { MutableLiveData<Track>() }
-
-    init {
-        mCurrentState.value = PlayerState.LOADED
-        viewModelScope.launch {
-            repository
-                .fetch()
-                .collect {
-                    mTrack.value = it
-                    mCurrentState.value = PlayerState.READY
-                }
-        }
-    }
 
     fun action() {
         when (mCurrentState.value) {
@@ -45,6 +30,7 @@ class PlayerViewModel(
     }
 
     private fun play() {
+        player.play()
         mCurrentState.value = PlayerState.PLAYING
     }
 

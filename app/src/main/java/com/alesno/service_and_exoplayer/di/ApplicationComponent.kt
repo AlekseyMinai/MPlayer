@@ -30,7 +30,7 @@ object ApplicationComponent {
                             val repository = get<Repository>()
                             val serviceConnector = get<PlayerServiceConnection>()
                             PlayerViewModel(
-                                serviceConnection = serviceConnector,
+                                player = serviceConnector,
                                 repository = repository
                             )
                         }
