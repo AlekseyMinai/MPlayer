@@ -19,6 +19,10 @@ class PlayerViewModel(
     private val mCurrentState by uiLazy { MutableLiveData<PlayerState>() }
     private val mTrack by uiLazy { MutableLiveData<Track>() }
 
+    init {
+        mCurrentState.value = PlayerState.READY
+    }
+
     fun action() {
         when (mCurrentState.value) {
             PlayerState.PLAYING -> stop()
@@ -35,6 +39,7 @@ class PlayerViewModel(
     }
 
     private fun stop() {
+        player.stop()
         mCurrentState.value = PlayerState.STOPPED
     }
 
