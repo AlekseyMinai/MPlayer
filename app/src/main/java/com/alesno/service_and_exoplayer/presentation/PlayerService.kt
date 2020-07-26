@@ -177,8 +177,9 @@ class PlayerService : Service() {
                 mMediaMetaData.apply {
                     title = track?.title
                     artist = track?.artist
-                    albumArtUri = track?.url
+                    albumArtUri = track?.coverUrl
                 }
+                mMediaSession?.setMetadata(mMediaMetaData.build())
                 prepareToPlay(track?.url ?: "")
             }
         }

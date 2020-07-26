@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import com.alesno.service_and_exoplayer.R
 import com.alesno.service_and_exoplayer.domain.PlayerState
 import com.alesno.service_and_exoplayer.domain.Track
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_player.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -58,10 +59,12 @@ class PlayerFragment : Fragment() {
         }
     }
 
-    private fun updateTrack(track: Track) {
-       // cover.setImageDrawable(track.coverId)
+    private fun updateTrack(track: TrackViewState) {
         artist.text = track.artist
         title.text = track.title
+        Glide.with(this)
+            .load(track.coverUrl)
+            .into(cover)
     }
 
     companion object {
@@ -70,6 +73,7 @@ class PlayerFragment : Fragment() {
 
     }
 
+    //TODO убрать в базовый класс
     private fun <T> LiveData<T>.observeWith(func: (T) -> Unit) {
         observe(viewLifecycleOwner, Observer { func(it) })
     }

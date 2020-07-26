@@ -14,6 +14,12 @@ inline val MediaMetadataCompat.title: String?
 inline val MediaMetadataCompat.artist: String?
     get() = getString(MediaMetadataCompat.METADATA_KEY_ARTIST)
 
+inline val MediaMetadataCompat.albumArtUri: String?
+    get() = getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)
+
+inline val MediaMetadataCompat.url: String?
+    get() = getString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI)
+
 
 const val NO_GET = "Property does not have a 'get'"
 

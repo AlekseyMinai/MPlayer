@@ -27,11 +27,9 @@ object ApplicationComponent {
                             )
                         }
                         viewModel {
-                            val repository = get<Repository>()
                             val serviceConnector = get<PlayerServiceConnection>()
                             PlayerViewModel(
-                                player = serviceConnector,
-                                repository = repository
+                                player = serviceConnector
                             )
                         }
                     }
