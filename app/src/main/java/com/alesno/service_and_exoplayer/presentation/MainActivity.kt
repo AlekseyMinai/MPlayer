@@ -1,7 +1,7 @@
 package com.alesno.service_and_exoplayer.presentation
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.alesno.service_and_exoplayer.R
 
 class MainActivity : AppCompatActivity() {

@@ -13,7 +13,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.alesno.service_and_exoplayer.R
 import com.alesno.service_and_exoplayer.domain.PlayerState
-import com.alesno.service_and_exoplayer.domain.Track
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_player.*
 import org.koin.androidx.viewmodel.ext.android.viewModel

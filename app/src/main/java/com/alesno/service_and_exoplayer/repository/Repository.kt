@@ -27,6 +27,4 @@ class Repository : IRepository {
         tracks.value = remoteData[mNextTrackIndex]
     }
 
-
-
 }

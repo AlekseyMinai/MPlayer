@@ -27,7 +27,9 @@ object MediaStyleHelper {
             .setContentTitle(mediaSession.controller.metadata.artist)
             .setSubText(mediaSession.controller.metadata.title)
             .setSmallIcon(R.drawable.ic_baseline_play_arrow_24)
-            .setLargeIcon(ContextCompat.getDrawable(context, R.drawable.hypa)?.toBitmap(300, 200)) //TODO подгружать заранее из сети
+            .setLargeIcon(
+                ContextCompat.getDrawable(context, R.drawable.hypa)?.toBitmap(300, 200)
+            ) //TODO подгружать заранее из сети
             .setContentIntent(mediaSession.controller.sessionActivity)
             .setDeleteIntent(
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
