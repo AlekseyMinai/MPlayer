@@ -2,6 +2,7 @@ package com.alesno.service_and_exoplayer.repository
 
 import com.alesno.service_and_exoplayer.domain.IRepository
 import com.alesno.service_and_exoplayer.domain.Track
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class Repository : IRepository {
@@ -16,18 +17,16 @@ class Repository : IRepository {
     )
     private var mNextTrackIndex = 0
 
-    override val tracks: MutableStateFlow<Track> = MutableStateFlow(
-        Track( //todo нужно значение по умолчанию, придумать что-то, чтобы инициировать при получении первого значения
-            title = "test",
-            artist = "flow",
-            url = null
-        )
-    )
+    @ExperimentalCoroutinesApi
+    override val tracks: MutableStateFlow<Track?> = MutableStateFlow(null)
 
+    @ExperimentalCoroutinesApi
     override fun getNextTrack() {
-        if (mNextTrackIndex == remoteData.size) mNextTrackIndex = 0
+        if (mNextTrackIndex == remoteData.lastIndex) mNextTrackIndex = 0
         else mNextTrackIndex++
         tracks.value = remoteData[mNextTrackIndex]
     }
+
+
 
 }

@@ -57,6 +57,8 @@ class PlayerServiceConnection(
 
                 override fun onServiceDisconnected(name: ComponentName?) {
                     mServiceBinder = null
+                    mMediaController?.unregisterCallback(mMediaControllerCallback)
+                    mMediaController = null
                     Toast.makeText(applicationContext, "disconnect", Toast.LENGTH_SHORT).show()
                 }
 
