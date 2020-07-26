@@ -1,20 +1,20 @@
 package com.alesno.service_and_exoplayer.presentation
 
-import android.app.Notification
+import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.media.AudioManager
 import android.net.Uri
 import android.os.Binder
+import android.os.Build
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.media.session.MediaButtonReceiver
 import com.alesno.service_and_exoplayer.R
 import com.alesno.service_and_exoplayer.domain.IRepository
@@ -26,15 +26,9 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.audio.AudioAttributes
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
-import com.google.android.exoplayer2.extractor.ExtractorsFactory
-import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DataSpec
-import com.google.android.exoplayer2.upstream.RawResourceDataSource
 import com.google.android.exoplayer2.upstream.cache.*
 import com.google.android.exoplayer2.util.Util
 import kotlinx.coroutines.GlobalScope
@@ -46,15 +40,12 @@ import java.io.File
 
 class PlayerService : Service() {
 
-    //private val metaBuilder = Media
-
     private var mMediaSession: MediaSessionCompat? = null
     private var mMediaController: MediaControllerCompat? = null
-    private lateinit var mMediaSessionConnector: MediaSessionConnector
+
     private var mRepository: IRepository? = null
     private val mMediaMetaData = MediaMetadataCompat.Builder()
     private var mLoadDataJob: Job? = null
-    private var mAudioManager: AudioManager? = null
 
     private val mAudioAttributes = AudioAttributes.Builder()
         .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -71,20 +62,16 @@ class PlayerService : Service() {
     }
     private var mDataSourceFactory: CacheDataSourceFactory? = null
 
-    private val stateBuilder =
-        PlaybackStateCompat.Builder().setActions(
-            PlaybackStateCompat.ACTION_PLAY
-                    or PlaybackStateCompat.ACTION_STOP
-                    or PlaybackStateCompat.ACTION_PAUSE
-        )
+    private val stateBuilder = PlaybackStateCompat.Builder().setActions(
+        PlaybackStateCompat.ACTION_PLAY or PlaybackStateCompat.ACTION_STOP or PlaybackStateCompat.ACTION_PAUSE
+    )
 
     private val mMediaSessionCallback = object : MediaSessionCompat.Callback() {
 
         override fun onPlay() {
             if (!mExoPlayer.playWhenReady) {
                 startService(Intent(applicationContext, this@PlayerService.javaClass))
-                prepareToPlay("https://firebasestorage.googleapis.com/v0/b/testfirebase-a2d24.appspot.com/o/hypa_hypa.mp3?alt=media&token=2b6a0ab5-8748-4dd7-bad4-cc5476856708")
-
+                mRepository?.getNextTrack()
                 mMediaSession?.isActive = true
                 mExoPlayer.playWhenReady = true
             }
@@ -95,7 +82,6 @@ class PlayerService : Service() {
                     1f
                 ).build()
             )
-
             val currentState = PlaybackStateCompat.STATE_PLAYING
             refreshNotificationAndForegroundStatus(currentState)
         }
@@ -121,22 +107,33 @@ class PlayerService : Service() {
 
     }
 
-    private fun prepareToPlay(url: String) {
-        val mediaSource =
-            ProgressiveMediaSource.Factory(mDataSourceFactory).createMediaSource(Uri.parse(url))
-        mExoPlayer.prepare(mediaSource)
-    }
-
+    @SuppressLint("WrongConstant")
     override fun onCreate() {
         super.onCreate()
-
-        mAudioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChanel = NotificationChannel(
+                NOTIFICATION_DEFAULT_CHANNEL_ID,
+                "Player controls",
+                NotificationManagerCompat.IMPORTANCE_DEFAULT
+            )
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(notificationChanel)
+        }
         val mediaSession = MediaSessionCompat(this, "PlayerService")
         mMediaController = MediaControllerCompat(applicationContext, mediaSession)
         val intent = Intent(applicationContext, MainActivity::class.java)
         mediaSession.setSessionActivity(PendingIntent.getActivity(applicationContext, 0, intent, 0))
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
         mediaSession.setCallback(mMediaSessionCallback)
+
+        val mediaButtonIntent = Intent(
+            Intent.ACTION_MEDIA_BUTTON, null, applicationContext, MediaButtonReceiver::class.java
+        )
+
+        mMediaSession?.setMediaButtonReceiver(
+            PendingIntent.getBroadcast(applicationContext, 0, mediaButtonIntent, 0)
+        )
 
         //TODO можно переделать на работу через MediaSessionConnector и убрать MediaSessionCallback
         /*mMediaSessionConnector = MediaSessionConnector(mediaSession).also { connector ->
@@ -159,6 +156,11 @@ class PlayerService : Service() {
         )
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MediaButtonReceiver.handleIntent(mMediaSession, intent)
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         mMediaSession?.release()
@@ -177,8 +179,15 @@ class PlayerService : Service() {
                     artist = track?.artist
                     albumArtUri = track?.url
                 }
+                prepareToPlay(track?.url ?: "")
             }
         }
+    }
+
+    private fun prepareToPlay(url: String) {
+        val mediaSource =
+            ProgressiveMediaSource.Factory(mDataSourceFactory).createMediaSource(Uri.parse(url))
+        mExoPlayer.prepare(mediaSource)
     }
 
     private inner class PlayerEventListener : Player.EventListener {
@@ -187,7 +196,7 @@ class PlayerService : Service() {
             super.onPlayerStateChanged(playWhenReady, playbackState)
             if (playWhenReady && playbackState == ExoPlayer.STATE_ENDED) {
                 //TODO включаем следующий
-                mMediaSessionCallback.onSkipToNext()
+                //mMediaSessionCallback.onSkipToNext()
             }
         }
 
@@ -208,67 +217,33 @@ class PlayerService : Service() {
         when (playbackState) {
             PlaybackStateCompat.STATE_PLAYING -> startForeground(
                 NOTIFICATION_ID,
-                getNotification(playbackState)
+                mMediaSession?.let {
+                    MediaStyleHelper.from(applicationContext, it, playbackState, this)
+                }
             )
             PlaybackStateCompat.STATE_STOPPED -> {
-                getNotification(playbackState)?.let {
-                    NotificationManagerCompat.from(this)
-                        .notify(NOTIFICATION_ID, it)
+                mMediaSession?.let {
+                    val notification =
+                        MediaStyleHelper.from(applicationContext, it, playbackState, this)
+                    NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
                 }
                 stopForeground(false)
             }
+            else -> {
+                mMediaSession?.let {
+                    val notification =
+                        MediaStyleHelper.from(applicationContext, it, playbackState, this)
+                    NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notification)
+                }
+                stopForeground(true)
+            }
         }
-    }
-
-    private fun getNotification(playbackState: Int): Notification? {
-        val notificationBuilder = mMediaSession?.let {
-            MediaStyleHelper.from(applicationContext, it)
-        } ?: return null
-        if (playbackState == PlaybackStateCompat.STATE_PLAYING)
-            notificationBuilder.addAction(
-                NotificationCompat.Action(
-                    R.drawable.ic_baseline_stop_24,
-                    "Stop",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_STOP
-                    )
-                )
-            )
-        else
-            notificationBuilder.addAction(
-                NotificationCompat.Action(
-                    R.drawable.ic_baseline_play_arrow_24,
-                    "Play",
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_PLAY
-                    )
-                )
-            )
-        notificationBuilder.setStyle(
-            androidx.media.app.NotificationCompat.MediaStyle()
-                .setShowActionsInCompactView(0)
-                .setShowCancelButton(true)
-                .setCancelButtonIntent(
-                    MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_STOP
-                    )
-                )
-                .setMediaSession(mMediaSession?.sessionToken)
-        )
-        notificationBuilder.setSmallIcon(R.mipmap.ic_launcher)
-        notificationBuilder.color = ContextCompat.getColor(this, R.color.colorPrimaryDark)
-        notificationBuilder.setOnlyAlertOnce(true)
-        notificationBuilder.setChannelId(NOTIFICATION_DEFAULT_CHANEL_ID)
-        return notificationBuilder.build()
     }
 
     companion object {
 
         private const val NOTIFICATION_ID = 404
-        private const val NOTIFICATION_DEFAULT_CHANEL_ID = "default_chanel"
+        private const val NOTIFICATION_DEFAULT_CHANNEL_ID = "default_chanel"
 
     }
 }

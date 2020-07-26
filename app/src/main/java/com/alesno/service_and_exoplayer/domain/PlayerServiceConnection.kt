@@ -49,8 +49,6 @@ class PlayerServiceConnection(
                                     )
                                 }
                             mMediaController?.registerCallback(mMediaControllerCallback)
-
-                            Toast.makeText(applicationContext, "connect", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
