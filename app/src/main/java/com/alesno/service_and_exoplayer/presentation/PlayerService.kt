@@ -31,6 +31,7 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.cache.*
 import com.google.android.exoplayer2.util.Util
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
@@ -171,6 +172,7 @@ class PlayerService : Service() {
 
     override fun onBind(intent: Intent?) = ServiceBinder()
 
+    @ExperimentalCoroutinesApi
     private fun loadData(repository: IRepository) {
         mLoadDataJob = GlobalScope.launch {
             repository.tracks.collect { track ->
@@ -178,6 +180,7 @@ class PlayerService : Service() {
                     title = track?.title
                     artist = track?.artist
                     albumArtUri = track?.coverUrl
+
                 }
                 mMediaSession?.setMetadata(mMediaMetaData.build())
                 prepareToPlay(track?.url ?: "")

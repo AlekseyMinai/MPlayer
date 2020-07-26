@@ -6,8 +6,11 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.media.session.MediaButtonReceiver
 import com.alesno.service_and_exoplayer.R
+import com.alesno.service_and_exoplayer.presentation.extensions.artist
+import com.alesno.service_and_exoplayer.presentation.extensions.title
 
 object MediaStyleHelper {
 
@@ -21,8 +24,10 @@ object MediaStyleHelper {
         serviceContext: Context
     ): Notification =
         NotificationCompat.Builder(context)
-            .setContentText("mediaMetaData.artist")
-            .setSubText("mediaMetaData.title")
+            .setContentTitle(mediaSession.controller.metadata.artist)
+            .setSubText(mediaSession.controller.metadata.title)
+            .setSmallIcon(R.drawable.ic_baseline_play_arrow_24)
+            .setLargeIcon(ContextCompat.getDrawable(context, R.drawable.hypa)?.toBitmap(300, 200)) //TODO подгружать заранее из сети
             .setContentIntent(mediaSession.controller.sessionActivity)
             .setDeleteIntent(
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
@@ -66,7 +71,7 @@ object MediaStyleHelper {
                         .setMediaSession(mediaSession.sessionToken)
                 )
                 setSmallIcon(R.mipmap.ic_launcher)
-                color = ContextCompat.getColor(serviceContext, R.color.colorPrimaryDark)
+                color = ContextCompat.getColor(serviceContext, R.color.colorPrimary)
                 setShowWhen(false)
                 priority = NotificationCompat.PRIORITY_HIGH
                 setOnlyAlertOnce(true)
